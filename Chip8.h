@@ -21,6 +21,13 @@ class Chip8 {
 
     uint8_t keys[8];
 
+    uint8_t delay_timer;
+    uint8_t sound_timer;
+
+
+public:
+    void emulate_cycle();
+
 };
 
 
