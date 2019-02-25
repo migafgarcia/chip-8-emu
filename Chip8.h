@@ -7,6 +7,8 @@
 
 
 #include <cstdint>
+#include <random>
+
 
 class Chip8 {
 
@@ -23,6 +25,9 @@ class Chip8 {
 
     uint8_t delay_timer;
     uint8_t sound_timer;
+
+    std::mt19937_64 rng = std::mt19937_64(1234);
+    std::uniform_int_distribution<int> random = std::uniform_int_distribution<int>(0, 255);
 
 
 public:

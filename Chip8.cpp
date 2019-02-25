@@ -14,9 +14,10 @@ void Chip8::emulate_cycle() {
         case 0x0000:
             switch (opcode & 0x000F) {
                 case 0x0000: // 0x00E0: Clears the screen.
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     break;
-
                 case 0x000E: // 0x00EE: Returns from subroutine.
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     break;
                 default:
                     throw "Unknown opcode: " + std::to_string(opcode);
@@ -114,20 +115,24 @@ void Chip8::emulate_cycle() {
             pc += 2;
             break;
         case 0xB000:
-            pc += 2;
+            pc = static_cast<uint16_t>(opcode & 0x0FFF) + registers[0];
             break;
         case 0xC000:
+            registers[(opcode & 0x0F00) >> 8] = static_cast<uint8_t>(random(rng) & (opcode & 0x0FFF));
             pc += 2;
             break;
         case 0xD000:
+            std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
             pc += 2;
             break;
         case 0xE000:
             switch (opcode & 0x00FF) {
                 case 0x009E:
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     pc += 2;
                     break;
                 case 0x00A1:
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     pc += 2;
                     break;
                 default:
@@ -136,21 +141,27 @@ void Chip8::emulate_cycle() {
         case 0xF000:
             switch (opcode & 0x00FF) {
                 case 0x0007:
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     pc += 2;
                     break;
                 case 0x000A:
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     pc += 2;
                     break;
                 case 0x0015:
+                    delay_timer = registers[(opcode & 0x0F00) >> 8];
                     pc += 2;
                     break;
                 case 0x0018:
+                    sound_timer = registers[(opcode & 0x0F00) >> 8];
                     pc += 2;
                     break;
                 case 0x001E:
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     pc += 2;
                     break;
                 case 0x0029:
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     pc += 2;
                     break;
                 case 0x0033:
@@ -160,9 +171,11 @@ void Chip8::emulate_cycle() {
                     pc += 2;
                     break;
                 case 0x0055:
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     pc += 2;
                     break;
                 case 0x0065:
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     pc += 2;
                     break;
                 default:
@@ -177,7 +190,7 @@ void Chip8::emulate_cycle() {
 
     if (sound_timer > 0) {
         if (sound_timer == 1)
-            printf("BEEP!\n");
+            std::cout << "Beep" << std::endl;
         --sound_timer;
     }
 
