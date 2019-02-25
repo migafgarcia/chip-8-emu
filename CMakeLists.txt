@@ -10,7 +10,7 @@ add_subdirectory("glfw")
 add_subdirectory("glm")
 add_subdirectory("glad")
 
-add_executable(chip_8_emu main.cpp Opcode.h Chip8.cpp Chip8.h)
+add_executable(chip_8_emu main.cpp Chip8.cpp Chip8.h)
 
 target_link_libraries(chip_8_emu glfw)
 target_link_libraries(chip_8_emu glm)
