@@ -12,6 +12,9 @@ int main() {
 
     Chip8 chip8;
 
+
+	chip8.init_graphics();
+
     chip8.read_rom(file);
 
 
@@ -20,10 +23,10 @@ int main() {
         try {
         chip8.emulate_cycle();
         }
-        catch (const std::exception &exc)
+        catch (char * c)
         {
             // catch anything thrown within try block that derives from std::exception
-            std::cerr << exc.what() << std::endl;
+            std::cerr << c << std::endl;
         }
     }
     return 0;

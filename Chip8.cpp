@@ -7,26 +7,24 @@
 
 void Chip8::emulate_cycle() {
 
-    uint16_t opcode = memory[pc];
-    opcode >>= 8;
-    opcode |= memory[pc + 1];
+    uint16_t opcode = memory[pc] << 8 | memory[pc + 1];
 
     std::cout << "Executing " << std::hex << opcode << std::endl;
 
     switch (opcode & 0xF000) {
         case 0x0000:
-            switch (opcode & 0x00FF) {
-                case 0x00E0: // 0x00E0: Clears the screen.
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+            switch (opcode & 0x000F) {
+                case 0x0000: // 0x00E0: Clears the screen.
+                    std::cerr << "Screen Cleared" << std::endl;
                     pc += 2;
                     break;
-                case 0x00EE: // 0x00EE: Returns from subroutine.
+                case 0x000E: // 0x00EE: Returns from subroutine.
                     --sp;
                     pc = stack[sp];
                     pc += 2;
                     break;
                 default:
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    std::cerr << "Opcode " << std::hex << opcode << " not implemented" << std::endl;
                     pc += 2;
             }
             break;
@@ -135,7 +133,7 @@ void Chip8::emulate_cycle() {
             pc += 2;
             break;
         case 0xD000:
-            std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+            std::cerr << "Draw Sprite" << std::endl;
             pc += 2;
             break;
         case 0xE000:
@@ -161,7 +159,7 @@ void Chip8::emulate_cycle() {
                     pc += 2;
                     break;
                 case 0x000A:
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    std::cerr << "Key Press" << std::endl;
                     pc += 2;
                     break;
                 case 0x0015:
@@ -221,7 +219,9 @@ void Chip8::emulate_cycle() {
 
 }
 
-Chip8::Chip8() {}
+Chip8::Chip8() {
+
+}
 
 void Chip8::read_rom(const std::string filename) {
 
@@ -236,13 +236,34 @@ void Chip8::read_rom(const std::string filename) {
     int i = 512;
 
     while(ifs >> buf) {
+        std::cout << std::hex << (int) buf << std::endl;
         memory[i++] = buf;
     }
+}
 
+void Chip8::init_graphics() {
 
+    glfwInit();
 
+    GLFWwindow *window = glfwCreateWindow(width, height, "Chip 8 Emulator", nullptr, nullptr);
+    if (window == nullptr) {
+        glfwTerminate();
+        throw "Failed to create GLFW window";
+    }
+
+  /*  glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+        throw "Failed to initialize GLAD";
+    }*/
 
 }
+
+void Chip8::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
 
 
 
