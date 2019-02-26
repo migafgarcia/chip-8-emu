@@ -8,6 +8,9 @@
 
 #include <cstdint>
 #include <random>
+#include <iostream>
+#include <string>
+#include <fstream>
 
 
 class Chip8 {
@@ -19,7 +22,7 @@ class Chip8 {
 
     uint8_t registers[16];
     uint16_t index;
-    uint16_t pc;
+    uint16_t pc = 0x200;
 
     uint16_t stack[16];
     uint16_t sp;
@@ -37,6 +40,8 @@ class Chip8 {
 public:
 
     Chip8();
+
+    void read_rom(const std::string filename);
 
     void emulate_cycle();
 

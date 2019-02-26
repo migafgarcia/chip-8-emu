@@ -2,8 +2,7 @@
 // Created by migafgarcia on 25-02-2019.
 //
 
-#include <iostream>
-#include <string>
+
 #include "Chip8.h"
 
 void Chip8::emulate_cycle() {
@@ -12,20 +11,25 @@ void Chip8::emulate_cycle() {
     opcode >>= 8;
     opcode |= memory[pc + 1];
 
+    std::cout << "Executing " << std::hex << opcode << std::endl;
+
     switch (opcode & 0xF000) {
         case 0x0000:
-            switch (opcode & 0x000F) {
-                case 0x0000: // 0x00E0: Clears the screen.
+            switch (opcode & 0x00FF) {
+                case 0x00E0: // 0x00E0: Clears the screen.
                     std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    pc += 2;
                     break;
-                case 0x000E: // 0x00EE: Returns from subroutine.
+                case 0x00EE: // 0x00EE: Returns from subroutine.
                     --sp;
                     pc = stack[sp];
                     pc += 2;
                     break;
                 default:
-                    throw "Unknown opcode: " + std::to_string(opcode);
+                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    pc += 2;
             }
+            break;
         case 0x1000: // Jumps to address NNN.
             pc = static_cast<uint16_t>(opcode & 0x0FFF);
             break;
@@ -113,6 +117,7 @@ void Chip8::emulate_cycle() {
                 default:
                     throw "Unknown opcode: " + std::to_string(opcode);
             }
+            break;
         case 0x9000:
             if (registers[(opcode & 0x0F00) >> 8] != registers[(opcode & 0x00F0) >> 4])
                 pc += 2;
@@ -148,6 +153,7 @@ void Chip8::emulate_cycle() {
                 default:
                     throw "Unknown opcode: " + std::to_string(opcode);
             }
+            break;
         case 0xF000:
             switch (opcode & 0x00FF) {
                 case 0x0007:
@@ -199,6 +205,7 @@ void Chip8::emulate_cycle() {
                 default:
                     throw "Unknown opcode: " + std::to_string(opcode);
             }
+            break;
         default:
             throw "Unknown opcode: " + std::to_string(opcode);
     }
@@ -215,6 +222,27 @@ void Chip8::emulate_cycle() {
 }
 
 Chip8::Chip8() {}
+
+void Chip8::read_rom(const std::string filename) {
+
+    std::fstream ifs{filename};
+
+    if(!ifs) {
+        throw "Could not open file " + filename;
+    }
+
+    uint8_t buf;
+
+    int i = 512;
+
+    while(ifs >> buf) {
+        memory[i++] = buf;
+    }
+
+
+
+
+}
 
 
 
