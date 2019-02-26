@@ -12,6 +12,9 @@
 
 class Chip8 {
 
+    static const uint8_t width = 64;
+    static const uint8_t height = 32;
+
     uint8_t memory[4096];
 
     uint8_t registers[16];
@@ -22,6 +25,7 @@ class Chip8 {
     uint16_t sp;
 
     uint8_t keys[8];
+    uint8_t  gfx[width * height];
 
     uint8_t delay_timer;
     uint8_t sound_timer;
@@ -31,6 +35,9 @@ class Chip8 {
 
 
 public:
+
+    Chip8();
+
     void emulate_cycle();
 
 };

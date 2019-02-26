@@ -8,7 +8,9 @@
 
 void Chip8::emulate_cycle() {
 
-    uint16_t opcode = memory[pc] >> 8 | memory[pc + 1];
+    uint16_t opcode = memory[pc];
+    opcode >>= 8;
+    opcode |= memory[pc + 1];
 
     switch (opcode & 0xF000) {
         case 0x0000:
@@ -17,7 +19,9 @@ void Chip8::emulate_cycle() {
                     std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
                     break;
                 case 0x000E: // 0x00EE: Returns from subroutine.
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    --sp;
+                    pc = stack[sp];
+                    pc += 2;
                     break;
                 default:
                     throw "Unknown opcode: " + std::to_string(opcode);
@@ -50,21 +54,25 @@ void Chip8::emulate_cycle() {
             pc += 2;
             break;
         case 0x7000: // Adds NN to VX. (Carry flag is not changed)
-            registers[(opcode & 0x0F00) >> 8] += registers[(opcode & 0x00F0) >> 4];
+            registers[(opcode & 0x0F00) >> 8] += static_cast<uint8_t>(opcode & 0x00FF);
             pc += 2;
             break;
         case 0x8000:
             switch (opcode & 0x000F) {
-                case 0x0001: // Sets VX to the value of VY.
+                case 0x0000:
                     registers[(opcode & 0x0F00) >> 8] = registers[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
-                case 0x0002:
+                case 0x0001:
                     registers[(opcode & 0x0F00) >> 8] |= registers[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
-                case 0x0003:
+                case 0x0002:
                     registers[(opcode & 0x0F00) >> 8] &= registers[(opcode & 0x00F0) >> 4];
+                    pc += 2;
+                    break;
+                case 0x0003:
+                    registers[(opcode & 0x0F00) >> 8] ^= registers[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
                 case 0x0004: // Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't.
@@ -84,12 +92,12 @@ void Chip8::emulate_cycle() {
                     pc += 2;
                     break;
                 case 0x0006:
-                    registers[0xF] = static_cast<uint8_t>(opcode & 0x0001);
+                    registers[0xF] = static_cast<uint8_t>(registers[(opcode & 0x0F00) >> 8] & 0x0001);
                     registers[(opcode & 0x0F00) >> 8] >>= 1;
                     pc += 2;
                     break;
                 case 0x0007:
-                    if (registers[(opcode & 0x00F0) >> 4] < registers[(opcode & 0x0F00) >> 8])
+                    if (registers[(opcode & 0x00F0) >> 4] > registers[(opcode & 0x0F00) >> 8])
                         registers[0xF] = 0;
                     else
                         registers[0xF] = 1;
@@ -98,7 +106,7 @@ void Chip8::emulate_cycle() {
                     pc += 2;
                     break;
                 case 0x000E:
-                    registers[0xF] = static_cast<uint8_t>((opcode & 0x8000) >> 15);
+                    registers[0xF] = registers[(opcode & 0x0F00) >> 8] >> 7;
                     registers[(opcode & 0x0F00) >> 8] <<= 1;
                     pc += 2;
                     break;
@@ -128,11 +136,13 @@ void Chip8::emulate_cycle() {
         case 0xE000:
             switch (opcode & 0x00FF) {
                 case 0x009E:
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    if(keys[registers[(opcode & 0x0F00) >> 8]] != 0)
+                        pc += 2;
                     pc += 2;
                     break;
                 case 0x00A1:
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    if(keys[registers[(opcode & 0x0F00) >> 8]] == 0)
+                        pc += 4;
                     pc += 2;
                     break;
                 default:
@@ -141,7 +151,7 @@ void Chip8::emulate_cycle() {
         case 0xF000:
             switch (opcode & 0x00FF) {
                 case 0x0007:
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    registers[(opcode & 0x0F00) >> 8] = delay_timer;
                     pc += 2;
                     break;
                 case 0x000A:
@@ -157,11 +167,15 @@ void Chip8::emulate_cycle() {
                     pc += 2;
                     break;
                 case 0x001E:
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    if(index + registers[(opcode & 0x0F00) >> 8] > 0xFFF)
+                        registers[0xF] = 1;
+                    else
+                        registers[0xF] = 0;
+                    index += registers[(opcode & 0x0F00) >> 8];
                     pc += 2;
                     break;
                 case 0x0029:
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    index = static_cast<uint16_t>(registers[(opcode & 0x0F00) >> 8] * 0x5);
                     pc += 2;
                     break;
                 case 0x0033:
@@ -171,11 +185,15 @@ void Chip8::emulate_cycle() {
                     pc += 2;
                     break;
                 case 0x0055:
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i)
+                        memory[index + i] = registers[i];
+                    index += ((opcode & 0x0F00) >> 8) + 1;
                     pc += 2;
                     break;
                 case 0x0065:
-                    std::cerr << "Opcode " << std::to_string(opcode) << " not implemented" << std::endl;
+                    for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i)
+                        registers[i] = memory[index + i];
+                    index += ((opcode & 0x0F00) >> 8) + 1;
                     pc += 2;
                     break;
                 default:
@@ -195,3 +213,8 @@ void Chip8::emulate_cycle() {
     }
 
 }
+
+Chip8::Chip8() {}
+
+
+
