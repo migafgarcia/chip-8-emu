@@ -25,8 +25,8 @@ class Chip8 {
 	uint8_t memory[4096] = { 0 };
 
 	uint8_t registers[16] = { 0 };
-    uint16_t index;
-    uint16_t pc = 0x200;
+    uint16_t index = 0;
+    uint16_t pc = 512;
 
 	uint16_t stack[16] = { 0 };
     uint16_t sp = 0;

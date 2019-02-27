@@ -24,17 +24,16 @@ void Chip8::emulate_cycle() {
                     pc += 2;
                     break;
                 default:
-                    std::cerr << "Opcode " << std::hex << opcode << " not implemented" << std::endl;
-                    pc += 2;
+					throw "Unknown opcode: " + std::to_string(opcode);
             }
             break;
         case 0x1000: // Jumps to address NNN.
-            pc = static_cast<uint16_t>(opcode & 0x0FFF);
+            pc = opcode & 0x0FFF;
             break;
         case 0x2000: // Calls subroutine at NNN.
             stack[sp] = pc;
             ++sp;
-            pc = static_cast<uint16_t>(opcode & 0x0FFF);
+            pc = opcode & 0x0FFF;
             break;
         case 0x3000: // Skips the next instruction if VX equals NN.
             if (registers[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF))
@@ -52,11 +51,11 @@ void Chip8::emulate_cycle() {
             pc += 2;
             break;
         case 0x6000: // Sets VX to NN.
-            registers[(opcode & 0x0F00) >> 8] = static_cast<uint8_t>(opcode & 0x00FF);
+            registers[(opcode & 0x0F00) >> 8] = opcode & 0x00FF;
             pc += 2;
             break;
         case 0x7000: // Adds NN to VX. (Carry flag is not changed)
-            registers[(opcode & 0x0F00) >> 8] += static_cast<uint8_t>(opcode & 0x00FF);
+            registers[(opcode & 0x0F00) >> 8] += opcode & 0x00FF;
             pc += 2;
             break;
         case 0x8000:
@@ -94,7 +93,7 @@ void Chip8::emulate_cycle() {
                     pc += 2;
                     break;
                 case 0x0006:
-                    registers[0xF] = static_cast<uint8_t>(registers[(opcode & 0x0F00) >> 8] & 0x0001);
+                    registers[0xF] = registers[(opcode & 0x0F00) >> 8] & 0x0001;
                     registers[(opcode & 0x0F00) >> 8] >>= 1;
                     pc += 2;
                     break;
@@ -122,14 +121,14 @@ void Chip8::emulate_cycle() {
             pc += 2;
             break;
         case 0xA000:
-            index = static_cast<uint16_t>(opcode & 0x0FFF);
+            index = opcode & 0x0FFF;
             pc += 2;
             break;
         case 0xB000:
-            pc = static_cast<uint16_t>(opcode & 0x0FFF) + registers[0];
+            pc = opcode & 0x0FFF + registers[0];
             break;
         case 0xC000:
-            registers[(opcode & 0x0F00) >> 8] = static_cast<uint8_t>(random(rng) & (opcode & 0x0FFF));
+            registers[(opcode & 0x0F00) >> 8] = random(rng) & (opcode & 0x0FFF);
             pc += 2;
             break;
         case 0xD000:
@@ -179,13 +178,13 @@ void Chip8::emulate_cycle() {
                     pc += 2;
                     break;
                 case 0x0029:
-                    index = static_cast<uint16_t>(registers[(opcode & 0x0F00) >> 8] * 0x5);
+                    index = registers[(opcode & 0x0F00) >> 8] * 0x5;
                     pc += 2;
                     break;
                 case 0x0033:
-                    memory[index] = static_cast<uint8_t>(registers[(opcode & 0x0F00) >> 8] / 100);
-                    memory[index + 1] = static_cast<uint8_t>((registers[(opcode & 0x0F00) >> 8] / 10) % 10);
-                    memory[index + 2] = static_cast<uint8_t>((registers[(opcode & 0x0F00) >> 8] % 100) % 10);
+                    memory[index] = registers[(opcode & 0x0F00) >> 8] / 100;
+                    memory[index + 1] =(registers[(opcode & 0x0F00) >> 8] / 10) % 10;
+                    memory[index + 2] = (registers[(opcode & 0x0F00) >> 8] % 100) % 10;
                     pc += 2;
                     break;
                 case 0x0055:
@@ -225,20 +224,18 @@ Chip8::Chip8() {
 
 void Chip8::read_rom(const std::string filename) {
 
-    std::fstream ifs{filename};
+    std::basic_ifstream<uint8_t> ifs{filename};
 
     if(!ifs) {
         throw "Could not open file " + filename;
     }
 
-    uint8_t buf;
+	ifs.seekg(0, std::ios::end);
+	size_t len = ifs.tellg();
+	ifs.seekg(0, std::ios::beg);
+	ifs.read(&memory[512], len);
+	ifs.close();
 
-    int i = 512;
-
-    while(ifs >> buf) {
-        std::cout << std::hex << (int) buf << std::endl;
-        memory[i++] = buf;
-    }
 }
 
 void Chip8::init_graphics() {
