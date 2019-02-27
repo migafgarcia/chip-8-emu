@@ -5,9 +5,31 @@
 
 #include "Chip8.h"
 
+static const uint8_t chip8_fontset[80] =
+{
+	0xF0, 0x90, 0x90, 0x90, 0xF0, //0
+	0x20, 0x60, 0x20, 0x20, 0x70, //1
+	0xF0, 0x10, 0xF0, 0x80, 0xF0, //2
+	0xF0, 0x10, 0xF0, 0x10, 0xF0, //3
+	0x90, 0x90, 0xF0, 0x10, 0x10, //4
+	0xF0, 0x80, 0xF0, 0x10, 0xF0, //5
+	0xF0, 0x80, 0xF0, 0x90, 0xF0, //6
+	0xF0, 0x10, 0x20, 0x40, 0x40, //7
+	0xF0, 0x90, 0xF0, 0x90, 0xF0, //8
+	0xF0, 0x90, 0xF0, 0x10, 0xF0, //9
+	0xF0, 0x90, 0xF0, 0x90, 0x90, //A
+	0xE0, 0x90, 0xE0, 0x90, 0xE0, //B
+	0xF0, 0x80, 0x80, 0x80, 0xF0, //C
+	0xE0, 0x90, 0x90, 0x90, 0xE0, //D
+	0xF0, 0x80, 0xF0, 0x80, 0xF0, //E
+	0xF0, 0x80, 0xF0, 0x80, 0x80  //F
+};
+
 void Chip8::emulate_cycle() {
 
     uint16_t opcode = memory[pc] << 8 | memory[pc + 1];
+
+	bool draw = false;
 
     std::cout << "Executing " << std::hex << opcode << std::endl;
 
@@ -16,6 +38,9 @@ void Chip8::emulate_cycle() {
             switch (opcode & 0x000F) {
                 case 0x0000: // 0x00E0: Clears the screen.
                     std::cerr << "Screen Cleared" << std::endl;
+					for (int i = 0; i < 2048; ++i)
+						pixels[i] = 0x0;
+					draw = true;
                     pc += 2;
                     break;
                 case 0x000E: // 0x00EE: Returns from subroutine.
@@ -131,10 +156,30 @@ void Chip8::emulate_cycle() {
             registers[(opcode & 0x0F00) >> 8] = random(rng) & (opcode & 0x0FFF);
             pc += 2;
             break;
-        case 0xD000:
-            std::cerr << "Draw Sprite" << std::endl;
-            pc += 2;
-            break;
+		case 0xD000: {
+			std::cerr << "Draw Sprite" << std::endl;
+			uint8_t x = registers[(opcode & 0x0F00) >> 8];
+			uint8_t y = registers[(opcode & 0x00F0) >> 4];
+			uint8_t height = opcode & 0x000F;
+			uint8_t pixel;
+
+			registers[0xF] = 0;
+
+			for (int col = 0; col < height; col++) {
+				pixel = memory[index + col];
+				for (int row = 0; row < 8; row++) {
+					if ((pixel & (0x80 >> row)) != 0) {
+						if (pixels[(x + row + ((y + col) * width))] == 1) 
+							registers[0xF] = 1;
+						pixels[x + row + ((y + col) * width)] ^= 1;
+					}
+				}
+			}
+
+			draw = true;
+			pc += 2;
+			break;
+		}
         case 0xE000:
             switch (opcode & 0x00FF) {
                 case 0x009E:
@@ -216,9 +261,31 @@ void Chip8::emulate_cycle() {
         --sound_timer;
     }
 
+	if (draw) {
+
+
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+		SDL_RenderClear(renderer);
+		for (int i = 0; i < width * height; i++) {
+			if (pixels[i] == 0) {
+				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+			}
+			else
+				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+			SDL_RenderDrawPoint(renderer, i % width, i / width);
+
+
+		}
+
+		SDL_RenderPresent(renderer);
+
+		 //Renders on middle of screen.
+	}
+
 }
 
-Chip8::Chip8() {
+Chip8::Chip8(SDL_Renderer* renderer) : renderer{ renderer } {
 
 }
 

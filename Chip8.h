@@ -13,6 +13,8 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <SDL.h>
+#undef main
 
 
 class Chip8 {
@@ -38,10 +40,14 @@ class Chip8 {
     std::mt19937_64 rng = std::mt19937_64(1234); // TODO(migafgarcia): use dynamic seed
     std::uniform_int_distribution<int> random = std::uniform_int_distribution<int>(0, 255);
 
+	static const uint8_t chip8_fontset[80];
+
+	SDL_Renderer* renderer;
+
 
 public:
 
-    Chip8();
+    Chip8(SDL_Renderer* renderer);
 
     void init_graphics();
 
