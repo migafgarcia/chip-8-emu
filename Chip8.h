@@ -7,14 +7,12 @@
 
 
 
-#include "glad/glad.h"
 
 #include <cstdint>
 #include <random>
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <GLFW/glfw3.h>
 
 
 class Chip8 {
@@ -46,8 +44,6 @@ public:
     Chip8();
 
     void init_graphics();
-
-    static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
     void read_rom(const std::string filename);
 

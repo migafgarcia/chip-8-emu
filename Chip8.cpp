@@ -240,26 +240,10 @@ void Chip8::read_rom(const std::string filename) {
 
 void Chip8::init_graphics() {
 
-    glfwInit();
 
-    GLFWwindow *window = glfwCreateWindow(width, height, "Chip 8 Emulator", nullptr, nullptr);
-    if (window == nullptr) {
-        glfwTerminate();
-        throw "Failed to create GLFW window";
-    }
-
-  /*  glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-        throw "Failed to initialize GLAD";
-    }*/
 
 }
 
-void Chip8::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    glViewport(0, 0, width, height);
-}
 
 
 
