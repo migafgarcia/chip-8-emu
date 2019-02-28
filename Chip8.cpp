@@ -5,7 +5,7 @@
 
 #include "Chip8.h"
 
-static const uint8_t chip8_fontset[80] =
+const uint8_t Chip8::chip8_fontset[80] =
 {
 	0xF0, 0x90, 0x90, 0x90, 0xF0, //0
 	0x20, 0x60, 0x20, 0x20, 0x70, //1
@@ -286,23 +286,18 @@ void Chip8::emulate_cycle() {
 }
 
 Chip8::Chip8(SDL_Renderer* renderer) : renderer{ renderer } {
-
+	for (int i = 0; i < 80; ++i)
+		memory[i] = Chip8::chip8_fontset[i];
 }
 
 void Chip8::read_rom(const std::string filename) {
-
-    std::basic_ifstream<uint8_t> ifs{filename};
-
-    if(!ifs) {
-        throw "Could not open file " + filename;
-    }
-
-	ifs.seekg(0, std::ios::end);
-	size_t len = ifs.tellg();
-	ifs.seekg(0, std::ios::beg);
-	ifs.read(&memory[512], len);
-	ifs.close();
-
+	std::ifstream fl;
+	fl.open(filename, std::ifstream::binary);
+	fl.seekg(0, std::ios::end);
+	size_t len = fl.tellg();
+	fl.seekg(0, std::ios::beg);
+	fl.read(reinterpret_cast<char*>(memory + 512), len);
+	fl.close();
 }
 
 void Chip8::init_graphics() {

@@ -10,8 +10,8 @@
 int main() {
 
 	//const std::string file = R"(C:\Users\migafgarcia\Downloads\Tetris [Fran Dachille, 1991].ch8)";
-	const std::string file = R"(C:\Users\migafgarcia\Downloads\Chip8 Picture.ch8)";
-	//const std::string file = R"(C:\Users\migafgarcia\Downloads\myChip8-bin-src\pong2.c8)";
+	//const std::string file = R"(C:\Users\migafgarcia\Downloads\Chip8 Picture.ch8)";
+	const std::string file = R"(C:\Users\migafgarcia\Downloads\myChip8-bin-src\pong2.c8)";
 
 	SDL_Init(SDL_INIT_VIDEO);
 
@@ -55,7 +55,7 @@ int main() {
 					break;
 
 			}
-			Sleep(105);
+			Sleep(10);
 		}
 		catch (char * c)
 		{
