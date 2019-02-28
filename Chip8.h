@@ -24,6 +24,9 @@ public:
 
 	Chip8(SDL_Renderer* renderer);
 
+	void handle_keydown(int32_t keycode);
+	void handle_keyup(int32_t keycode);
+
 	void read_rom(const std::string filename);
 
 	void emulate_cycle();
