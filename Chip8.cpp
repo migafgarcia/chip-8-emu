@@ -29,8 +29,6 @@ void Chip8::emulate_cycle() {
 
     uint16_t opcode = memory[pc] << 8 | memory[pc + 1];
 
-	bool draw = false;
-
     std::cout << "Executing " << std::hex << opcode << std::endl;
 
     switch (opcode & 0xF000) {
@@ -40,7 +38,6 @@ void Chip8::emulate_cycle() {
                     std::cerr << "Screen Cleared" << std::endl;
 					for (int i = 0; i < 2048; ++i)
 						pixels[i] = 0x0;
-					draw = true;
                     pc += 2;
                     break;
                 case 0x000E: // 0x00EE: Returns from subroutine.
@@ -175,8 +172,6 @@ void Chip8::emulate_cycle() {
 					}
 				}
 			}
-
-			draw = true;
 			pc += 2;
 			break;
 		}
@@ -261,27 +256,24 @@ void Chip8::emulate_cycle() {
         --sound_timer;
     }
 
-	if (draw) {
 
 
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-		SDL_RenderClear(renderer);
-		for (int i = 0; i < width * height; i++) {
-			if (pixels[i] == 0) {
-				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-			}
-			else
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-
-			SDL_RenderDrawPoint(renderer, i % width, i / width);
-
-
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderClear(renderer);
+	for (int i = 0; i < width * height; i++) {
+		if (pixels[i] == 0) {
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		}
+		else
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-		SDL_RenderPresent(renderer);
+		SDL_RenderDrawPoint(renderer, i % width, i / width);
 
-		 //Renders on middle of screen.
+
 	}
+
+	SDL_RenderPresent(renderer);
+	
 
 }
 
@@ -300,11 +292,6 @@ void Chip8::read_rom(const std::string filename) {
 	fl.close();
 }
 
-void Chip8::init_graphics() {
-
-
-
-}
 
 
 
