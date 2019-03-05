@@ -1,6 +1,8 @@
 # chip-8-emu
 Emulator for the Chip-8 VM.
 
+![Screenshot](/screenshots/screen.PNG?raw=true "Screenshot")
+
 Chip-8 has a very small set of instructions, which makes it very easy to implement. There are many implementations of this emulator across the web.
 This one is built using C++. The windowing, input and graphics are provided by the SDL2 library.
 
