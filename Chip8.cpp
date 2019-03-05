@@ -31,13 +31,13 @@ void Chip8::emulate_cycle() {
 
 	bool keyPress = false;
 
-	std::cout << "Executing " << std::hex << opcode << std::endl;
+	std::cout << "Executing " << std::hex << opcode << '\n';
 
 	switch (opcode & 0xF000) {
 	case 0x0000:
 		switch (opcode & 0x000F) {
 		case 0x0000: // 0x00E0: Clears the screen.
-			std::cout << "Screen Cleared" << std::endl;
+			std::cout << "Screen Cleared\n";
 			for (auto &pixel : pixels)
                 pixel = 0x0;
 			pc += 2;
@@ -160,7 +160,7 @@ void Chip8::emulate_cycle() {
 		pc += 2;
 		break;
 	case 0xD000: {
-		std::cout << "Draw Sprite" << std::endl;
+		std::cout << "Draw Sprite\n";
 		uint8_t x = registers[(opcode & 0x0F00) >> 8];
 		uint8_t y = registers[(opcode & 0x00F0) >> 4];
 		auto height = static_cast<uint8_t>(opcode & 0x000F);
@@ -206,7 +206,7 @@ void Chip8::emulate_cycle() {
 			pc += 2;
 			break;
 		case 0x000A:
-			std::cout << "Key Press" << std::endl;
+			std::cout << "Key Press\n";
 			for (int i = 0; i < 16; ++i)
 			{
 				if (keys[i] != 0)
@@ -272,7 +272,7 @@ void Chip8::emulate_cycle() {
 
 		if (sound_timer > 0) {
 			if (sound_timer == 1)
-				std::cout << "Beep" << std::endl;
+				std::cout << "Beep\n";
 			--sound_timer;
 		}
 	}

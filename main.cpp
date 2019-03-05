@@ -138,7 +138,7 @@ void handle_window_event(SDL_Renderer *renderer, const SDL_Event &event) {
             SDL_Log("Window %d closed", event.window.windowID);
             break;
         default:
-            std::cerr << "Unknown event " << event.window.event << std::endl;
+            std::cerr << "Unknown event " << event.window.event << '\n';
     }
 }
 
