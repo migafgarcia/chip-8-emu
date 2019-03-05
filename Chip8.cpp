@@ -37,7 +37,7 @@ void Chip8::emulate_cycle() {
 	case 0x0000:
 		switch (opcode & 0x000F) {
 		case 0x0000: // 0x00E0: Clears the screen.
-			std::cerr << "Screen Cleared" << std::endl;
+			std::cout << "Screen Cleared" << std::endl;
 			for (auto &pixel : pixels)
                 pixel = 0x0;
 			pc += 2;
@@ -185,13 +185,15 @@ void Chip8::emulate_cycle() {
 		switch (opcode & 0x00FF) {
 		case 0x009E:
 			if (keys[registers[(opcode & 0x0F00) >> 8]] != 0)
-				pc += 2;
-			pc += 2;
+				pc += 4;
+			else
+			    pc += 2;
 			break;
 		case 0x00A1:
 			if (keys[registers[(opcode & 0x0F00) >> 8]] == 0)
 				pc += 4;
-			pc += 2;
+			else
+			    pc += 2;
 			break;
 		default:
 			throw "Unknown opcode: " + std::to_string(opcode);
