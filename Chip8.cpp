@@ -29,8 +29,7 @@ void Chip8::emulate_cycle() {
 
 	uint16_t opcode = memory[pc] << 8 | memory[pc + 1];
 
-	bool keyPress = true;
-
+	bool keyPress = false;
 
 	std::cout << "Executing " << std::hex << opcode << std::endl;
 
@@ -39,8 +38,8 @@ void Chip8::emulate_cycle() {
 		switch (opcode & 0x000F) {
 		case 0x0000: // 0x00E0: Clears the screen.
 			std::cerr << "Screen Cleared" << std::endl;
-			for (int i = 0; i < 2048; ++i)
-				pixels[i] = 0x0;
+			for (auto &pixel : pixels)
+                pixel = 0x0;
 			pc += 2;
 			break;
 		case 0x000E: // 0x00EE: Returns from subroutine.
@@ -53,30 +52,33 @@ void Chip8::emulate_cycle() {
 		}
 		break;
 	case 0x1000: // Jumps to address NNN.
-		pc = opcode & 0x0FFF;
+		pc = static_cast<uint16_t>(opcode & 0x0FFF);
 		break;
 	case 0x2000: // Calls subroutine at NNN.
 		stack[sp] = pc;
 		++sp;
-		pc = opcode & 0x0FFF;
+		pc = static_cast<uint16_t>(opcode & 0x0FFF);
 		break;
 	case 0x3000: // Skips the next instruction if VX equals NN.
 		if (registers[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF))
-			pc += 2;
-		pc += 2;
+			pc += 4;
+		else
+		    pc += 2;
 		break;
 	case 0x4000: // Skips the next instruction if VX doesn't equal NN.
-		if (registers[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF))
-			pc += 2;
-		pc += 2;
+		if (registers[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF))
+			pc += 4;
+		else
+		    pc += 2;
 		break;
 	case 0x5000: // Skips the next instruction if VX equals VY.
 		if (registers[(opcode & 0x0F00) >> 8] == registers[(opcode & 0x00F0) >> 4])
-			pc += 2;
-		pc += 2;
+			pc += 4;
+		else
+		    pc += 2;
 		break;
 	case 0x6000: // Sets VX to NN.
-		registers[(opcode & 0x0F00) >> 8] = opcode & 0x00FF;
+		registers[(opcode & 0x0F00) >> 8] = static_cast<uint8_t>(opcode & 0x00FF);
 		pc += 2;
 		break;
 	case 0x7000: // Adds NN to VX. (Carry flag is not changed)
@@ -118,7 +120,7 @@ void Chip8::emulate_cycle() {
 			pc += 2;
 			break;
 		case 0x0006:
-			registers[0xF] = registers[(opcode & 0x0F00) >> 8] & 0x0001;
+			registers[0xF] = static_cast<uint8_t>(registers[(opcode & 0x0F00) >> 8] & 0x0001);
 			registers[(opcode & 0x0F00) >> 8] >>= 1;
 			pc += 2;
 			break;
@@ -142,25 +144,26 @@ void Chip8::emulate_cycle() {
 		break;
 	case 0x9000:
 		if (registers[(opcode & 0x0F00) >> 8] != registers[(opcode & 0x00F0) >> 4])
-			pc += 2;
-		pc += 2;
+			pc += 4;
+		else
+		    pc += 2;
 		break;
 	case 0xA000:
-		index = opcode & 0x0FFF;
+		index = static_cast<uint16_t>(opcode & 0x0FFF);
 		pc += 2;
 		break;
 	case 0xB000:
-		pc = opcode & 0x0FFF + registers[0];
+		pc = static_cast<uint16_t>(opcode & 0x0FFF + registers[0]);
 		break;
 	case 0xC000:
-		registers[(opcode & 0x0F00) >> 8] = random(rng) & (opcode & 0x0FFF);
+		registers[(opcode & 0x0F00) >> 8] = static_cast<uint8_t>(random(rng)  & (opcode & 0x0FFF));
 		pc += 2;
 		break;
 	case 0xD000: {
-		std::cerr << "Draw Sprite" << std::endl;
+		std::cout << "Draw Sprite" << std::endl;
 		uint8_t x = registers[(opcode & 0x0F00) >> 8];
 		uint8_t y = registers[(opcode & 0x00F0) >> 4];
-		uint8_t height = opcode & 0x000F;
+		auto height = static_cast<uint8_t>(opcode & 0x000F);
 		uint8_t pixel;
 
 		registers[0xF] = 0;
@@ -200,14 +203,13 @@ void Chip8::emulate_cycle() {
 			registers[(opcode & 0x0F00) >> 8] = delay_timer;
 			pc += 2;
 			break;
-		case 0x000A: {
-			std::cerr << "Key Press" << std::endl;
-			keyPress = false;
+		case 0x000A:
+			std::cout << "Key Press" << std::endl;
 			for (int i = 0; i < 16; ++i)
 			{
 				if (keys[i] != 0)
 				{
-					registers[(opcode & 0x0F00) >> 8] = i;
+					registers[(opcode & 0x0F00) >> 8] = static_cast<uint8_t>(i);
 					keyPress = true;
 				}
 			}
@@ -215,7 +217,6 @@ void Chip8::emulate_cycle() {
 			if (keyPress)
 				pc += 2;
 			break;
-		}
 		case 0x0015:
 			delay_timer = registers[(opcode & 0x0F00) >> 8];
 			pc += 2;
@@ -233,13 +234,13 @@ void Chip8::emulate_cycle() {
 			pc += 2;
 			break;
 		case 0x0029:
-			index = registers[(opcode & 0x0F00) >> 8] * 0x5;
+			index = static_cast<uint16_t>(registers[(opcode & 0x0F00) >> 8] * 0x5);
 			pc += 2;
 			break;
 		case 0x0033:
-			memory[index] = registers[(opcode & 0x0F00) >> 8] / 100;
-			memory[index + 1] = (registers[(opcode & 0x0F00) >> 8] / 10) % 10;
-			memory[index + 2] = (registers[(opcode & 0x0F00) >> 8] % 100) % 10;
+			memory[index] = static_cast<uint8_t>(registers[(opcode & 0x0F00) >> 8] / 100);
+			memory[index + 1] = static_cast<uint8_t>((registers[(opcode & 0x0F00) >> 8] / 10) % 10);
+			memory[index + 2] = static_cast<uint8_t>((registers[(opcode & 0x0F00) >> 8] % 100) % 10);
 			pc += 2;
 			break;
 		case 0x0055:
@@ -263,7 +264,7 @@ void Chip8::emulate_cycle() {
 	}
 
 
-	if (keyPress) {
+	if (!keyPress) {
 		if (delay_timer > 0)
 			--delay_timer;
 
@@ -277,9 +278,8 @@ void Chip8::emulate_cycle() {
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 	for (int i = 0; i < width * height; i++) {
-		if (pixels[i] == 0) {
+		if (pixels[i] == 0)
 			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		}
 		else
 			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
@@ -347,7 +347,7 @@ void Chip8::read_rom(const std::string filename) {
 	std::ifstream fl;
 	fl.open(filename, std::ifstream::binary);
 	fl.seekg(0, std::ios::end);
-	size_t len = fl.tellg();
+	int64_t len = fl.tellg();
 	fl.seekg(0, std::ios::beg);
 	fl.read(reinterpret_cast<char*>(memory + 512), len);
 	fl.close();

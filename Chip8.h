@@ -19,15 +19,15 @@
 
 class Chip8 {
 public:
-	static const uint8_t width = 64;
-	static const uint8_t height = 32;
+	static constexpr const uint8_t width = 64;
+	static constexpr const uint8_t height = 32;
 
-	Chip8(SDL_Renderer* renderer);
+    explicit Chip8(SDL_Renderer* renderer);
 
 	void handle_keydown(int32_t keycode);
 	void handle_keyup(int32_t keycode);
 
-	void read_rom(const std::string filename);
+	void read_rom(std::string filename);
 
 	void emulate_cycle();
 
@@ -41,13 +41,14 @@ private:
 	uint16_t stack[16] = { 0 };
 	uint16_t sp = 0;
 
-	uint8_t keys[8] = { 0 };
+	uint8_t keys[16] = { 0 };
 	uint8_t pixels[width * height] = { 0 };
 
 	uint8_t delay_timer = 0;
 	uint8_t sound_timer = 0;
 
-	std::mt19937_64 rng = std::mt19937_64(1234); // TODO(migafgarcia): use dynamic seed
+    std::random_device rd;
+	std::mt19937_64 rng = std::mt19937_64(rd());
 	std::uniform_int_distribution<int> random = std::uniform_int_distribution<int>(0, 255);
 
 	static const uint8_t chip8_fontset[80];
